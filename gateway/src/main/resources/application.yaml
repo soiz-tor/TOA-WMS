@@ -1,0 +1,41 @@
+server:
+  port: 8080
+spring:
+  data:
+    redis:
+      port: 6379
+      host: 192.168.220.128
+      database: 1
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.220.128:3306/wms?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: 123456
+  cloud:
+    consul:
+      discovery:
+        instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+        health-check-path: /actuator/health
+        hostname: 192.168.124.3
+        heartbeat:
+          enabled: true
+      host: 192.168.220.128
+      port: 8500
+    gateway:
+      discovery:
+        locator:
+          lower-case-service-id: true
+          enabled: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/**
+        - id: goods-service
+          uri: lb://goods-service
+          predicates:
+            - Path=/api/**
+      default-filters:
+        - StripPrefix=1
+  application:
+    name: gateway
